@@ -1,0 +1,20 @@
+{
+  "name": "CalendarLog-Server",
+  "version": "1.0.0",
+  "description": "캘로그(CalendarLog) Server - TypeScript (iOS는 Swift4, Android는 Kotlin)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henrychoi7/CalendarLog-Server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/henrychoi7/CalendarLog-Server/issues"
+  },
+  "homepage": "https://github.com/henrychoi7/CalendarLog-Server#readme"
+}
