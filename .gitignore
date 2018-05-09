@@ -1,3 +1,6 @@
+# IDE Config
+.idea/
+
 # Database Config
 src/config/mysql.pool.ts
 src/config/mysql.pool.js
