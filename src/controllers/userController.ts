@@ -1,4 +1,4 @@
-//import { pool } from '../config/maria.pool';
+import { pool } from '../config/mysql.pool';
 import { Request, Response } from 'express';
 
 export class UserController {
