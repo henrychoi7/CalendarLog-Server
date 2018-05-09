@@ -1,5 +1,6 @@
 # IDE Config
 .idea/
+.idea/workspace.xml
 
 # Database Config
 src/config/mysql.pool.ts
