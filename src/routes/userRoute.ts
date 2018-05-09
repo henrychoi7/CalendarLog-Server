@@ -5,6 +5,10 @@ export class UserRoute {
 
     public routes(express): void {
         express.route('/login')
-            .get(this.userController.getLogin);
+            .get(this.userController.getLogin)
+            .post(this.userController.postLogin);
+
+        express.route('/register')
+            .post(this.userController.postRegister);
     }
 }

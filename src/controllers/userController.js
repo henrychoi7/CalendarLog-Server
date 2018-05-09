@@ -4,7 +4,13 @@ var UserController = /** @class */ (function () {
     function UserController() {
     }
     UserController.prototype.getLogin = function (req, res) {
-        console.log("Success");
+        console.log("get login");
+    };
+    UserController.prototype.postLogin = function (req, res) {
+        console.log("post login");
+    };
+    UserController.prototype.postRegister = function (req, res) {
+        console.log("post register");
     };
     return UserController;
 }());
