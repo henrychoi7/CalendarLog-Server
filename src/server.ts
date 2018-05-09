@@ -1,8 +1,8 @@
-import app from './app';
+import express from './config/express';
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, (err) => {
+express.listen(port, (err) => {
   if (err) {
     return console.log(err);
   }
