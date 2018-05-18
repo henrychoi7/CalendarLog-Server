@@ -1,5 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from "body-parser";
+import * as cookieParser from 'cookie-parser';
+import * as expressSession from "express-session";
 import { UserRoute } from "../routes/userRoute";
 
 class Express {
@@ -16,6 +18,13 @@ class Express {
     private config(): void{
         this.express.use(bodyParser.json());
         this.express.use(bodyParser.urlencoded({ extended: false }));
+        this.express.use(cookieParser());
+        this.express.use(expressSession({ secret: 'PenguinKey',
+            name: 'PenguinEx',
+            store: sessionStorage,
+            proxy: true,
+            resave: true,
+            saveUninitialized: true }));
     }
   /*private mountRoutes(): void {
     const router = express.Router();
