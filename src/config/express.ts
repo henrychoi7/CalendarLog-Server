@@ -21,7 +21,7 @@ class Express {
         this.express.use(cookieParser());
         this.express.use(expressSession({ secret: 'PenguinKey',
             name: 'PenguinEx',
-            store: sessionStorage,
+            //store: sessionStorage,
             proxy: true,
             resave: true,
             saveUninitialized: true }));
