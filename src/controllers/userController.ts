@@ -8,64 +8,77 @@ let saltRounds = 10;
 export class UserController {
     public getLogin(req: Request, res: Response) {
         let requestEmail;
-        requestEmail = req.body.email;
+
+        requestEmail = req.query.email;
+
         if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+
         pool.getConnection(function (err, connection) {
             if (err) {
                 connection.release();
                 return res.json({isSuccess: false, message: "서버와의 연결이 원활하지않습니다."});
             }
             connection.query({
-                sql: "SELECT DELETE_YN \ FROM USER_INFO \ WHERE EMAIL = ?",
+                sql: "SELECT DELETE_YN \
+                FROM USER_INFO \
+                WHERE EMAIL = ?",
                 timeout: 10000
             }, [requestEmail], function (error_1, results_1, columns_1) {
+                connection.release();
                 if (error_1) {
-                    connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
+
                 if (!results_1.length) {
-                    connection.release();
                     return res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
                 }
                 if (results_1[0].DELETE_YN === 'N') {
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
+                res.json({isSuccess: true, message: "존재하는 이메일 입니다."});
             });
         });
     }
 
     public postLogin(req: Request, res: Response) {
         let requestEmail, requestPassword;
+
         requestEmail = req.body.email;
         requestPassword = req.body.password;
-        if (!requestPassword)
-            return res.json({isSuccess: false, message: "비밀번호를 입력해주세요."});
+
+        if (!requestPassword) return res.json({isSuccess: false, message: "비밀번호를 입력해주세요."});
+
         requestPassword = requestPassword.replace(/(\s*)/g, "");
-        if (requestPassword.length < 6 || requestPassword.length > 20)
-            return res.json({
-                isSuccess: false,
-                message: "비밀번호는 6~20자리를 입력해주세요."
-            });
+
+        if (requestPassword.length < 6 || requestPassword.length > 20) return res.json({
+            isSuccess: false,
+            message: "비밀번호는 6~20자리를 입력해주세요."
+        });
+
         pool.getConnection(function (err, connection) {
             if (err) {
                 connection.release();
                 return res.json({isSuccess: false, message: "서버와의 연결이 원활하지않습니다."});
             }
             connection.query({
-                sql: "SELECT DELETE_YN \ FROM USER_INFO \ WHERE PSWD = ?",
+                sql: "SELECT DELETE_YN \
+                FROM USER_INFO \
+                WHERE EMAIL = ? \
+                AND PSWD = ?",
                 timeout: 10000
-            }, [requestPassword], function (error_1, results_1, columns_1) {
+            }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
                 if (error_1) {
                     connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
                 if (!results_1.length) {
                     connection.release();
-                    return res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
+                    return res.json({isSuccess: false, message: "이메일 혹은 비밀번호가 올바르지 않습니다."});
                 }
                 if (results_1[0].DELETE_YN === 'N') {
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
+                res.json({isSuccess: true, message: "로그인 되었습니다."});
             });
         });
     }
