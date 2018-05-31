@@ -82,14 +82,14 @@ var UserController = /** @class */ (function () {
         });
     };
     UserController.prototype.postRegister = function (req, res) {
-        var requestEmail = req.body.email, requestPassword = req.body.password, requestPasswordConfirmation = req.body.password_confirmation, requestUsername = req.body.username, requestSex = req.body.sex, requestCategory = req.body.category, requestAssociate = req.body.associate;
+        var requestEmail = req.body.email, requestPassword = req.body.password, requestPasswordConfirmation = req.body.password_confirmation, requestNickname = req.body.nickname, requestSex = req.body.sex, requestCategory = req.body.category, requestAssociate = req.body.associate;
         if (!requestEmail)
             return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
         if (!requestPassword)
             return res.json({ isSuccess: false, message: "비밀번호를 입력해주세요." });
         if (!requestPasswordConfirmation)
             return res.json({ isSuccess: false, message: "비밀번호 확인 값을 입력해주세요." });
-        if (!requestUsername)
+        if (!requestNickname)
             return res.json({ isSuccess: false, message: "닉네임을 입력해주세요." });
         if (!requestSex)
             return res.json({ isSuccess: false, message: "성별을 선택해주세요." });
@@ -100,7 +100,7 @@ var UserController = /** @class */ (function () {
         requestEmail = requestEmail.replace(/(\s*)/g, "");
         requestPassword = requestPassword.replace(/(\s*)/g, "");
         requestPasswordConfirmation = requestPasswordConfirmation.replace(/(\s*)/g, "");
-        requestUsername = requestUsername.replace(/(\s*)/g, "");
+        requestNickname = requestNickname.replace(/(\s*)/g, "");
         requestAssociate = requestAssociate.replace(/(\s*)/g, "");
         if (requestEmail.length > 30)
             return res.json({
@@ -122,7 +122,7 @@ var UserController = /** @class */ (function () {
                 isSuccess: false,
                 message: "비밀번호가 일치하지 않습니다."
             });
-        if (requestUsername.length < 2 || requestUsername.length > 25)
+        if (requestNickname.length < 2 || requestNickname.length > 25)
             return res.json({
                 isSuccess: false,
                 message: "닉네임은 2~25자리를 입력해주세요."
@@ -172,7 +172,7 @@ var UserController = /** @class */ (function () {
                         sql: "INSERT INTO USER_INFO (EMAIL, PSWD, NICKNM, SEX, ASSOCIATE) \
                         VALUES (?, ?, ?, ?, ?)",
                         timeout: 10000
-                    }, [requestEmail, hash, requestUsername, requestSex, requestAssociate], function (error_3, results_3, columns_3) {
+                    }, [requestEmail, hash, requestNickname, requestSex, requestAssociate], function (error_3, results_3, columns_3) {
                         connection.release();
                         if (error_3) {
                             return res.json({ isSuccess: false, message: "회원가입(사용자 등록)에 실패하였습니다.\n값을 확인해주세요." });
