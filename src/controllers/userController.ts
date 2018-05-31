@@ -26,16 +26,19 @@ export class UserController {
             }, [requestEmail], function (error_1, results_1, columns_1) {
                 connection.release();
                 if (error_1) {
+                    connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
 
                 if (!results_1.length) {
-                    return res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
+                    connection.release();
+                    return res.json({isSuccess: false, message: ""});
                 }
-                if (results_1[0].DELETE_YN === 'N') {
+                if (results_1[0].DELETE_YN === 'Y') {
+                    connection.release();
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
-                res.json({isSuccess: true, message: "존재하는 이메일 입니다."});
+                res.json({isSuccess: true, message: ""});
             });
         });
     }
@@ -67,18 +70,20 @@ export class UserController {
                 AND PSWD = ?",
                 timeout: 10000
             }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
+                connection.release();
                 if (error_1) {
                     connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
                 if (!results_1.length) {
                     connection.release();
-                    return res.json({isSuccess: false, message: "이메일 혹은 비밀번호가 올바르지 않습니다."});
+                    return res.json({isSuccess: false, message: "비밀번호가 올바르지 않습니다."});
                 }
-                if (results_1[0].DELETE_YN === 'N') {
+                if (results_1[0].DELETE_YN === 'Y') {
+                    connection.release();
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
-                res.json({isSuccess: true, message: "로그인 되었습니다."});
+                res.json({isSuccess: true, message: ""});
             });
         });
     }
