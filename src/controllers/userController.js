@@ -10,6 +10,7 @@ var UserController = /** @class */ (function () {
     UserController.prototype.getLogin = function (req, res) {
         var requestEmail;
         requestEmail = req.query.email;
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
         if (!requestEmail)
             return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
         mysql_pool_1.pool.getConnection(function (err, connection) {
@@ -43,6 +44,7 @@ var UserController = /** @class */ (function () {
         requestPassword = req.body.password;
         if (!requestPassword)
             return res.json({ isSuccess: false, message: "비밀번호를 입력해주세요." });
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
         requestPassword = requestPassword.replace(/(\s*)/g, "");
         if (requestPassword.length < 6 || requestPassword.length > 20)
             return res.json({
@@ -55,10 +57,9 @@ var UserController = /** @class */ (function () {
                 return res.json({ isSuccess: false, message: "서버와의 연결이 원활하지않습니다." });
             }
             connection.query({
-                sql: "SELECT DELETE_YN \
+                sql: "SELECT PSWD, DELETE_YN \
                 FROM USER_INFO \
-                WHERE EMAIL = ? \
-                AND PSWD = ?",
+                WHERE EMAIL = ?",
                 timeout: 10000
             }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
                 connection.release();
@@ -71,7 +72,17 @@ var UserController = /** @class */ (function () {
                 if (results_1[0].DELETE_YN === 'Y') {
                     return res.json({ isSuccess: false, message: "계정을 탈퇴한 이메일입니다." });
                 }
-                res.json({ isSuccess: true, message: "" });
+                bcrypt.compare(requestPassword, results_1[0].PSWD, function (error_2, isMatched) {
+                    if (error_2) {
+                        return res.json({ isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요." });
+                    }
+                    if (isMatched === true) {
+                        res.json({ isSuccess: true, message: "" });
+                    }
+                    else {
+                        return res.json({ isSuccess: false, message: "비밀번호가 일치하지 않습니다." });
+                    }
+                });
             });
         });
     };
