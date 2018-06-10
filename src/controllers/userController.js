@@ -137,7 +137,7 @@ var UserController = /** @class */ (function () {
                 isSuccess: false,
                 message: "관심분야를 3개 이상 선택해주세요."
             });
-        if (requestAssociate.length === 0 || requestAssociate.length < 30)
+        if (requestAssociate.length === 0 || requestAssociate.length > 30)
             return res.json({
                 isSuccess: false,
                 message: "단체 / 기관을 입력해주세요."
@@ -166,6 +166,7 @@ var UserController = /** @class */ (function () {
                 }
                 bcrypt.hash(requestPassword, saltRounds, function (error_2, hash) {
                     if (error_2) {
+                        connection.release();
                         return res.json({ isSuccess: false, message: "회원가입(비밀번호 암호화)에 실패하였습니다.\n값을 확인해주세요." });
                     }
                     connection.query({
