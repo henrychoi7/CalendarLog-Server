@@ -91,7 +91,7 @@ var UserController = /** @class */ (function () {
         if (!requestCategory)
             return res.json({ isSuccess: false, message: "관심분야를 선택해주세요." });
         if (!requestAssociate)
-            return res.json({ isSuccess: false, message: "소속/기관을 입력해주세요." });
+            return res.json({ isSuccess: false, message: "단체 / 기관을 입력해주세요." });
         requestEmail = requestEmail.replace(/(\s*)/g, "");
         requestPassword = requestPassword.replace(/(\s*)/g, "");
         requestPasswordConfirmation = requestPasswordConfirmation.replace(/(\s*)/g, "");
@@ -130,12 +130,12 @@ var UserController = /** @class */ (function () {
         if (requestCategory.size < 3)
             return res.json({
                 isSuccess: false,
-                message: "카테고리를 3개 이상 선택해주세요."
+                message: "관심분야를 3개 이상 선택해주세요."
             });
-        if (requestAssociate.length === 0)
+        if (requestAssociate.length === 0 || requestAssociate.length < 30)
             return res.json({
                 isSuccess: false,
-                message: "소속/기관을 입력해주세요."
+                message: "단체 / 기관을 입력해주세요."
             });
         if (!regexEmail.test(requestEmail))
             return res.json({ isSuccess: false, message: "이메일을 정확하게 입력해주세요." });
