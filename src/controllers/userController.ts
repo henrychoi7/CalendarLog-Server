@@ -25,17 +25,16 @@ export class UserController {
                 timeout: 10000
             }, [requestEmail], function (error_1, results_1, columns_1) {
                 connection.release();
+
                 if (error_1) {
-                    connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
 
                 if (!results_1.length) {
-                    connection.release();
                     return res.json({isSuccess: false, message: ""});
                 }
+
                 if (results_1[0].DELETE_YN === 'Y') {
-                    connection.release();
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
                 res.json({isSuccess: true, message: ""});
@@ -72,15 +71,14 @@ export class UserController {
             }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
                 connection.release();
                 if (error_1) {
-                    connection.release();
                     return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
                 }
+
                 if (!results_1.length) {
-                    connection.release();
                     return res.json({isSuccess: false, message: "비밀번호가 올바르지 않습니다."});
                 }
+
                 if (results_1[0].DELETE_YN === 'Y') {
-                    connection.release();
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
                 res.json({isSuccess: true, message: ""});
