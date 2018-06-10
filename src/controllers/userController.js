@@ -137,11 +137,50 @@ var UserController = /** @class */ (function () {
                 isSuccess: false,
                 message: "성별을 선택해주세요."
             });
-        if (requestCategory.size < 3)
+        if (requestCategory.length < 3 || requestCategory.arr)
             return res.json({
                 isSuccess: false,
                 message: "관심분야를 3개 이상 선택해주세요."
             });
+        var executeSQL = "";
+        if (requestCategory instanceof Array) {
+            for (var i = 0; i < requestCategory.length; i++) {
+                var categoryCode = "";
+                switch (requestCategory[i]) {
+                    case 0:
+                        categoryCode = "001";
+                        break;
+                    case 1:
+                        categoryCode = "002";
+                        break;
+                    case 2:
+                        categoryCode = "003";
+                        break;
+                    case 3:
+                        categoryCode = "004";
+                        break;
+                    case 4:
+                        categoryCode = "005";
+                        break;
+                    case 5:
+                        categoryCode = "006";
+                        break;
+                    default:
+                        return res.json({
+                            isSuccess: false,
+                            message: "선택한 관심분야 값이 올바르지 않습니다."
+                        });
+                }
+                executeSQL += "INSERT INTO USER_CATEGORY (EMAIL, CTGR) \
+                            VALUES ('" + requestEmail + "', '" + categoryCode + "');";
+            }
+        }
+        else {
+            return res.json({
+                isSuccess: false,
+                message: "선택한 관심분야 값이 올바르지 않습니다."
+            });
+        }
         if (requestAssociate.length === 0 || requestAssociate.length > 30)
             return res.json({
                 isSuccess: false,
@@ -149,7 +188,6 @@ var UserController = /** @class */ (function () {
             });
         if (!regexEmail.test(requestEmail))
             return res.json({ isSuccess: false, message: "이메일을 정확하게 입력해주세요." });
-        console.log("post register");
         mysql_pool_1.pool.getConnection(function (err, connection) {
             if (err) {
                 connection.release();
@@ -174,16 +212,31 @@ var UserController = /** @class */ (function () {
                         connection.release();
                         return res.json({ isSuccess: false, message: "회원가입(비밀번호 암호화)에 실패하였습니다.\n값을 확인해주세요." });
                     }
-                    connection.query({
-                        sql: "INSERT INTO USER_INFO (EMAIL, PSWD, NICKNM, SEX, ASSOCIATE) \
-                        VALUES (?, ?, ?, ?, ?)",
-                        timeout: 10000
-                    }, [requestEmail, hash, requestNickname, requestSex, requestAssociate], function (error_3, results_3, columns_3) {
-                        connection.release();
-                        if (error_3) {
+                    executeSQL += "INSERT INTO USER_INFO (EMAIL, PSWD, NICKNM, SEX, ASSOCIATE) \
+                                        VALUES ('" + requestEmail + "', '" + hash + "', '" + requestNickname + "', '" + requestSex + "', '" + requestAssociate + "');";
+                    connection.beginTransaction(function (err) {
+                        if (err) {
+                            connection.release();
                             return res.json({ isSuccess: false, message: "회원가입(사용자 등록)에 실패하였습니다.\n값을 확인해주세요." });
                         }
-                        res.json({ isSuccess: true, message: "회원가입이 성공적으로 이루어졌습니다!" });
+                        connection.query(executeSQL, function (error_2, results_2, fields) {
+                            if (error_2) {
+                                return connection.rollback(function () {
+                                    connection.release();
+                                    res.json({ isSuccess: false, message: "회원가입(사용자 등록)에 실패하였습니다.\n값을 확인해주세요." });
+                                });
+                            }
+                            connection.commit(function (error_3) {
+                                if (error_3) {
+                                    return connection.rollback(function () {
+                                        connection.release();
+                                        res.json({ isSuccess: false, message: "회원가입(사용자 등록)에 실패하였습니다.\n값을 확인해주세요." });
+                                    });
+                                }
+                                connection.release();
+                                res.json({ isSuccess: true, message: "회원가입이 성공적으로 이루어졌습니다!" });
+                            });
+                        });
                     });
                 });
             });
