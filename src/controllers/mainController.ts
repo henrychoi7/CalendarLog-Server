@@ -74,7 +74,7 @@ export class MainController {
                     LIMIT ?, 10', [requestEmail, requestEmail, requestEmail, requestPageNo * 10]);
                 return res.json({isSuccess: true, message: "", scheduleList: scheduleList, feedList: feedList});
             } catch (error) {
-                return res.json({isSuccess: false, message: "일정을 불러오는데 실패하였습니다."});
+                return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
             }
         })();
     }
