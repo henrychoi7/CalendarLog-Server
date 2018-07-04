@@ -1,8 +1,8 @@
 "use strict";
-exports.__esModule = true;
-var jwt = require("jsonwebtoken");
+Object.defineProperty(exports, "__esModule", { value: true });
+const jwt = require("jsonwebtoken");
 exports.check = function (req) {
-    var token = req.headers["x-access-token"];
+    const token = req.headers["x-access-token"];
     if (!token)
         return false;
     try {
@@ -13,3 +13,4 @@ exports.check = function (req) {
         return false;
     }
 };
+//# sourceMappingURL=tokenController.js.map

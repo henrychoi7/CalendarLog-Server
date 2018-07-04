@@ -20,9 +20,9 @@ export class UserController {
                 return res.json({isSuccess: false, message: "서버와의 연결이 원활하지않습니다."});
             }
             connection.query({
-                sql: "SELECT DELETE_YN \
+                sql: 'SELECT DELETE_YN \
                 FROM USER_INFO \
-                WHERE EMAIL = ?",
+                WHERE EMAIL = ?',
                 timeout: 10000
             }, [requestEmail], function (error_1, results_1, columns_1) {
                 connection.release();

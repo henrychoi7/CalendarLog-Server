@@ -1,24 +1,22 @@
-import * as express from 'express';
-import * as bodyParser from "body-parser";
-import * as cookieParser from 'cookie-parser';
-import * as expressSession from "express-session";
-import { UserRoute } from "../routes/userRoute";
-import { MainRoute } from "../routes/mainRoute";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const expressSession = require("express-session");
+const userRoute_1 = require("../routes/userRoute");
+const mainRoute_1 = require("../routes/mainRoute");
 class Express {
-    public express: express.Application;
-    public userRoute: UserRoute = new UserRoute();
-    private mainRoute: MainRoute = new MainRoute();
-
     constructor() {
+        this.userRoute = new userRoute_1.UserRoute();
+        this.mainRoute = new mainRoute_1.MainRoute();
         this.express = express();
         this.config();
         this.userRoute.routes(this.express);
         this.mainRoute.routes(this.express);
         this.mountRoutes();
     }
-
-    private config(): void{
+    config() {
         this.express.use(bodyParser.json());
         this.express.use(bodyParser.urlencoded({ extended: false }));
         this.express.use(cookieParser());
@@ -29,8 +27,7 @@ class Express {
             resave: true,
             saveUninitialized: true }));
     }
-
-    private mountRoutes(): void {
+    mountRoutes() {
         const router = express.Router();
         router.get('/', (req, res) => {
             res.json({
@@ -40,5 +37,5 @@ class Express {
         this.express.use('/', router);
     }
 }
-
-export default new Express().express;
+exports.default = new Express().express;
+//# sourceMappingURL=express.js.map
