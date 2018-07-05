@@ -8,6 +8,8 @@ class MainRoute {
     routes(express) {
         express.route('/schedule_and_feed_list')
             .get(this.mainController.getScheduleAndFeedList);
+        express.route('/feed_list')
+            .get(this.mainController.getFeedList);
     }
 }
 exports.MainRoute = MainRoute;
