@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_pool_1 = require("../config/mysql.pool");
-;
 const regexEmail = require("regex-email");
 const bcrypt = require("bcrypt");
 let saltRounds = 10;

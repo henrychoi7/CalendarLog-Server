@@ -1,14 +1,14 @@
 "use strict";
-exports.__esModule = true;
-var express = require("express");
-var bodyParser = require("body-parser");
-var cookieParser = require("cookie-parser");
-var expressSession = require("express-session");
-var userRoute_1 = require("../routes/userRoute");
-var mainRoute_1 = require("../routes/mainRoute");
-var scheduleRoute_1 = require("../routes/scheduleRoute");
-var Express = /** @class */ (function () {
-    function Express() {
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const expressSession = require("express-session");
+const userRoute_1 = require("../routes/userRoute");
+const mainRoute_1 = require("../routes/mainRoute");
+const scheduleRoute_1 = require("../routes/scheduleRoute");
+class Express {
+    constructor() {
         this.userRoute = new userRoute_1.UserRoute();
         this.mainRoute = new mainRoute_1.MainRoute();
         this.scheduleRoute = new scheduleRoute_1.ScheduleRoute();
@@ -19,7 +19,7 @@ var Express = /** @class */ (function () {
         this.scheduleRoute.routes(this.express);
         this.mountRoutes();
     }
-    Express.prototype.config = function () {
+    config() {
         this.express.use(bodyParser.json());
         this.express.use(bodyParser.urlencoded({ extended: false }));
         this.express.use(cookieParser());
@@ -29,16 +29,16 @@ var Express = /** @class */ (function () {
             proxy: true,
             resave: true,
             saveUninitialized: true }));
-    };
-    Express.prototype.mountRoutes = function () {
-        var router = express.Router();
-        router.get('/', function (req, res) {
+    }
+    mountRoutes() {
+        const router = express.Router();
+        router.get('/', (req, res) => {
             res.json({
-                message: 'Hello guys! This is Node.js + TypeScript + ESLint'
+                message: 'Hello guys! This is Node.js + TypeScript + ESLint',
             });
         });
         this.express.use('/', router);
-    };
-    return Express;
-}());
-exports["default"] = new Express().express;
+    }
+}
+exports.default = new Express().express;
+//# sourceMappingURL=express.js.map

@@ -1,4 +1,4 @@
-import {pool, promiseMysqlModule} from '../config/mysql.pool';;
+import {pool, promiseMysqlModule} from '../config/mysql.pool';
 import {Request, Response} from 'express';
 import * as regexEmail from "regex-email";
 import * as bcrypt from "bcrypt";
