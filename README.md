@@ -90,3 +90,11 @@ export module promiseMysqlModule {
     }
 }
 ```
+
+## Usage
+
+1. ``npm install``
+
+2. ``tsc —outDir dist src/**/*``
+
+3. ``node dist/server.js``
