@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_pool_1 = require("../config/mysql.pool");
 const regexEmail = require("regex-email");
@@ -6,40 +14,32 @@ const bcrypt = require("bcrypt");
 let saltRounds = 10;
 class UserController {
     getLogin(req, res) {
-        let requestEmail;
-        requestEmail = req.query.email;
-        requestEmail = requestEmail.replace(/(\s*)/g, "");
+        let requestEmail = req.query.email;
         if (!requestEmail)
             return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
-        mysql_pool_1.pool.getConnection(function (err, connection) {
-            if (err) {
-                connection.release();
-                return res.json({ isSuccess: false, message: "서버와의 연결이 원활하지않습니다." });
-            }
-            connection.query({
-                sql: 'SELECT DELETE_YN \
-                FROM USER_INFO \
-                WHERE EMAIL = ?',
-                timeout: 10000
-            }, [requestEmail], function (error_1, results_1, columns_1) {
-                connection.release();
-                if (error_1) {
-                    return res.json({ isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요." });
-                }
-                if (!results_1.length) {
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+        mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const deleteYesOrNo = yield connection.query(`
+SELECT DELETE_YN 
+FROM USER_INFO 
+WHERE EMAIL = ?
+`, [requestEmail]);
+                if (!deleteYesOrNo.length) {
                     return res.json({ isSuccess: false, message: "" });
                 }
-                if (results_1[0].DELETE_YN === 'Y') {
+                if (deleteYesOrNo[0].DELETE_YN === 'Y') {
                     return res.json({ isSuccess: false, message: "계정을 탈퇴한 이메일입니다." });
                 }
                 res.json({ isSuccess: true, message: "" });
-            });
-        });
+            }
+            catch (error) {
+                return res.json({ isSuccess: false, message: "서버와의 연결이 불안정합니다." });
+            }
+        }))();
     }
     postLogin(req, res) {
-        let requestEmail, requestPassword;
-        requestEmail = req.body.email;
-        requestPassword = req.body.password;
+        let requestEmail = req.body.email, requestPassword = req.body.password;
         if (!requestPassword)
             return res.json({ isSuccess: false, message: "비밀번호를 입력해주세요." });
         requestEmail = requestEmail.replace(/(\s*)/g, "");
@@ -49,28 +49,20 @@ class UserController {
                 isSuccess: false,
                 message: "비밀번호는 6~20자리를 입력해주세요."
             });
-        mysql_pool_1.pool.getConnection(function (err, connection) {
-            if (err) {
-                connection.release();
-                return res.json({ isSuccess: false, message: "서버와의 연결이 원활하지않습니다." });
-            }
-            connection.query({
-                sql: "SELECT PSWD, DELETE_YN \
-                FROM USER_INFO \
-                WHERE EMAIL = ?",
-                timeout: 10000
-            }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
-                connection.release();
-                if (error_1) {
-                    return res.json({ isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요." });
-                }
-                if (!results_1.length) {
+        mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const deleteYesOrNo = yield connection.query(`
+SELECT PSWD, DELETE_YN 
+FROM USER_INFO 
+WHERE EMAIL = ?
+`, [requestEmail]);
+                if (!deleteYesOrNo.length) {
                     return res.json({ isSuccess: false, message: "비밀번호가 올바르지 않습니다." });
                 }
-                if (results_1[0].DELETE_YN === 'Y') {
+                if (deleteYesOrNo[0].DELETE_YN === 'Y') {
                     return res.json({ isSuccess: false, message: "계정을 탈퇴한 이메일입니다." });
                 }
-                bcrypt.compare(requestPassword, results_1[0].PSWD, function (error_2, isMatched) {
+                bcrypt.compare(requestPassword, deleteYesOrNo[0].PSWD, function (error_2, isMatched) {
                     if (error_2) {
                         return res.json({ isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요." });
                     }
@@ -81,8 +73,11 @@ class UserController {
                         return res.json({ isSuccess: false, message: "비밀번호가 일치하지 않습니다." });
                     }
                 });
-            });
-        });
+            }
+            catch (error) {
+                return res.json({ isSuccess: false, message: "서버와의 연결이 불안정합니다." });
+            }
+        }))();
     }
     postRegister(req, res) {
         let requestEmail = req.body.email, requestPassword = req.body.password, requestPasswordConfirmation = req.body.password_confirmation, requestNickname = req.body.nickname, requestSex = req.body.sex, requestCategory = req.body.category, requestAssociate = req.body.associate;
@@ -186,7 +181,7 @@ class UserController {
             });
         if (!regexEmail.test(requestEmail))
             return res.json({ isSuccess: false, message: "이메일을 정확하게 입력해주세요." });
-        mysql_pool_1.pool.getConnection(function (err, connection) {
+        pool.getConnection(function (err, connection) {
             if (err) {
                 connection.release();
                 return res.json({ isSuccess: false, message: "서버와의 연결이 원활하지않습니다." });
