@@ -1,4 +1,4 @@
-import {pool} from '../config/mysql.pool';
+import {pool, promiseMysqlModule} from '../config/mysql.pool';;
 import {Request, Response} from 'express';
 import * as regexEmail from "regex-email";
 import * as bcrypt from "bcrypt";
@@ -6,95 +6,70 @@ import * as bcrypt from "bcrypt";
 let saltRounds = 10;
 
 export class UserController {
-    public getLogin(req: Request, res: Response) {
-        let requestEmail;
-
-        requestEmail = req.query.email;
-        requestEmail = requestEmail.replace(/(\s*)/g, "");
-
+    getLogin(req: Request, res: Response) {
+        let requestEmail = req.query.email;
         if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
 
-        pool.getConnection(function (err, connection) {
-            if (err) {
-                connection.release();
-                return res.json({isSuccess: false, message: "서버와의 연결이 원활하지않습니다."});
-            }
-            connection.query({
-                sql: 'SELECT DELETE_YN \
-                FROM USER_INFO \
-                WHERE EMAIL = ?',
-                timeout: 10000
-            }, [requestEmail], function (error_1, results_1, columns_1) {
-                connection.release();
+        requestEmail = requestEmail.replace(/(\s*)/g, '');
 
-                if (error_1) {
-                    return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
-                }
-
-                if (!results_1.length) {
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const getLogin = await connection.query(`
+SELECT DELETE_YN 
+FROM USER_INFO 
+WHERE EMAIL = ?`, [requestEmail]);
+                if (!getLogin.length) {
                     return res.json({isSuccess: false, message: ""});
                 }
 
-                if (results_1[0].DELETE_YN === 'Y') {
+                if (getLogin[0].DELETE_YN === 'Y') {
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
                 res.json({isSuccess: true, message: ""});
-            });
-        });
+            } catch (error) {
+                return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
+            }
+        })();
     }
 
-    public postLogin(req: Request, res: Response) {
-        let requestEmail, requestPassword;
+    postLogin(req: Request, res: Response) {
+        let requestEmail = req.body.email,
+            requestPassword = req.body.password;
 
-        requestEmail = req.body.email;
-        requestPassword = req.body.password;
-
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
         if (!requestPassword) return res.json({isSuccess: false, message: "비밀번호를 입력해주세요."});
 
         requestEmail = requestEmail.replace(/(\s*)/g, "");
         requestPassword = requestPassword.replace(/(\s*)/g, "");
 
-        if (requestPassword.length < 6 || requestPassword.length > 20) return res.json({
-            isSuccess: false,
-            message: "비밀번호는 6~20자리를 입력해주세요."
-        });
-
-        pool.getConnection(function (err, connection) {
-            if (err) {
-                connection.release();
-                return res.json({isSuccess: false, message: "서버와의 연결이 원활하지않습니다."});
-            }
-            connection.query({
-                sql: "SELECT PSWD, DELETE_YN \
-                FROM USER_INFO \
-                WHERE EMAIL = ?",
-                timeout: 10000
-            }, [requestEmail, requestPassword], function (error_1, results_1, columns_1) {
-                connection.release();
-                if (error_1) {
-                    return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const postLogin = await connection.query(`
+SELECT PSWD, DELETE_YN
+FROM USER_INFO
+WHERE EMAIL = ?`, [requestEmail]);
+                if (!postLogin.length) {
+                    return res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
                 }
 
-                if (!results_1.length) {
-                    return res.json({isSuccess: false, message: "비밀번호가 올바르지 않습니다."});
-                }
-
-                if (results_1[0].DELETE_YN === 'Y') {
+                if (postLogin[0].DELETE_YN === 'Y') {
                     return res.json({isSuccess: false, message: "계정을 탈퇴한 이메일입니다."});
                 }
 
-                bcrypt.compare(requestPassword, results_1[0].PSWD, function (error_2, isMatched) {
+                bcrypt.compare(requestPassword, postLogin[0].PSWD, function (error_2, isMatched) {
                     if (error_2) {
                         return res.json({isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요."});
                     }
                     if (isMatched === true) {
                         res.json({isSuccess: true, message: ""});
                     } else {
-                        return res.json({isSuccess: false, message: "비밀번호가 일치하지 않습니다."});
+                        res.json({isSuccess: false, message: "비밀번호가 일치하지 않습니다."});
                     }
                 });
-            });
-        });
+            } catch (error) {
+                return res.json({isSuccess: false, message: "로그인에 실패하였습니다.\n값을 확인해주세요."});
+            }
+        })();
     }
 
     public postRegister(req: Request, res: Response) {

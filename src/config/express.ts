@@ -4,17 +4,20 @@ import * as cookieParser from 'cookie-parser';
 import * as expressSession from "express-session";
 import { UserRoute } from "../routes/userRoute";
 import { MainRoute } from "../routes/mainRoute";
+import { ScheduleRoute } from "../routes/scheduleRoute";
 
 class Express {
     public express: express.Application;
-    public userRoute: UserRoute = new UserRoute();
+    private userRoute: UserRoute = new UserRoute();
     private mainRoute: MainRoute = new MainRoute();
+    private scheduleRoute: ScheduleRoute = new ScheduleRoute();
 
     constructor() {
         this.express = express();
         this.config();
         this.userRoute.routes(this.express);
         this.mainRoute.routes(this.express);
+        this.scheduleRoute.routes(this.express);
         this.mountRoutes();
     }
 
