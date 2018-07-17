@@ -177,6 +177,7 @@ WHERE EMAIL = ?`, [requestEmail]);
             });
         if (!regexEmail.test(requestEmail))
             return res.json({ isSuccess: false, message: "이메일을 정확하게 입력해주세요." });
+        // 트랜잭션에서 다중쿼리 async/await 하는 부분을 잘 모르겠음
         mysql_pool_1.pool.getConnection(function (err, connection) {
             if (err) {
                 connection.release();

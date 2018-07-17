@@ -9,5 +9,8 @@ export class MainRoute {
 
         express.route('/feed_list')
             .get(this.mainController.getFeedList);
+
+        express.route('/feed_list_for_day')
+            .get(this.mainController.getFeedListForDay);
     }
 }
