@@ -4,8 +4,8 @@ import {Request, Response} from 'express';
 export class ScheduleController {
     createSchedule(req: Request, res: Response) {
         let requestEmail = req.query.email,
-            requestStartDate = req.query.startDate,
-            requestEndDate = req.query.endDate,
+            requestStartDate = req.query.start_date,
+            requestEndDate = req.query.end_date,
             requestTitle = req.query.schedule_title,
             requestContent = req.query.schedule_content,
             requestImgUrl = req.query.img_url,
@@ -90,8 +90,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [requestEmail, addSequence, 
     modifySchedule(req: Request, res: Response) {
         let requestSequence = req.query.sequence,
             requestEmail = req.query.email,
-            requestStartDate = req.query.startDate,
-            requestEndDate = req.query.endDate,
+            requestStartDate = req.query.start_date,
+            requestEndDate = req.query.end_date,
             requestTitle = req.query.schedule_title,
             requestContent = req.query.schedule_content,
             requestImgUrl = req.query.img_url,

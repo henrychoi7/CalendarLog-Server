@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_pool_1 = require("../config/mysql.pool");
 class ScheduleController {
     createSchedule(req, res) {
-        let requestEmail = req.query.email, requestStartDate = req.query.startDate, requestEndDate = req.query.endDate, requestTitle = req.query.schedule_title, requestContent = req.query.schedule_content, requestImgUrl = req.query.img_url, requestLocation = req.query.schedule_location, requestUrl1 = req.query.url1, requestUrl2 = req.query.url2, requestUrl3 = req.query.url3, requestCategory = req.query.category, requestEtc = req.query.etc, requestIsPublic = req.query.is_public;
+        let requestEmail = req.query.email, requestStartDate = req.query.start_date, requestEndDate = req.query.end_date, requestTitle = req.query.schedule_title, requestContent = req.query.schedule_content, requestImgUrl = req.query.img_url, requestLocation = req.query.schedule_location, requestUrl1 = req.query.url1, requestUrl2 = req.query.url2, requestUrl3 = req.query.url3, requestCategory = req.query.category, requestEtc = req.query.etc, requestIsPublic = req.query.is_public;
         if (!requestEmail)
             return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
         if (!requestStartDate)
@@ -85,7 +85,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [requestEmail, addSequence, 
         }))();
     }
     modifySchedule(req, res) {
-        let requestSequence = req.query.sequence, requestEmail = req.query.email, requestStartDate = req.query.startDate, requestEndDate = req.query.endDate, requestTitle = req.query.schedule_title, requestContent = req.query.schedule_content, requestImgUrl = req.query.img_url, requestLocation = req.query.schedule_location, requestUrl1 = req.query.url1, requestUrl2 = req.query.url2, requestUrl3 = req.query.url3, requestCategory = req.query.category, requestEtc = req.query.etc, requestIsPublic = req.query.is_public;
+        let requestSequence = req.query.sequence, requestEmail = req.query.email, requestStartDate = req.query.start_date, requestEndDate = req.query.end_date, requestTitle = req.query.schedule_title, requestContent = req.query.schedule_content, requestImgUrl = req.query.img_url, requestLocation = req.query.schedule_location, requestUrl1 = req.query.url1, requestUrl2 = req.query.url2, requestUrl3 = req.query.url3, requestCategory = req.query.category, requestEtc = req.query.etc, requestIsPublic = req.query.is_public;
         if (!requestSequence)
             return res.json({ isSuccess: false, message: "잘못된 일정입니다." });
         if (!requestEmail)
