@@ -73,10 +73,23 @@ class ScheduleController {
 SELECT MAX(SCH_SEQ) + 1
 FROM SCHEDULE
 WHERE SCH_EMAIL = ?`, [requestEmail]);
+                const requestSchDate = yield connection.query(`
+DECLARE @date DATE = ?
+WHILE @date < ?
+  BEGIN
+    INSERT INTO CALENDAR (SCH_DATE)
+      VALUES (@date)
+    SET @date = DATEADD (DAY, 1, @date)
+  END
+GO`, [requestStartDate, requestEndDate]);
                 yield connection.query(`
-INSERT SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, IMG_URL, LOCATION, URL_1, URL_2, URL_3, CTGR, ETC, IS_PUBLIC)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [requestEmail, addSequence, requestStartDate, requestEndDate, requestTitle, requestContent,
-                    requestImgUrl, requestLocation, requestUrl1, requestUrl2, requestUrl3, requestCategory, requestEtc, requestIsPublic]);
+BEGIN;
+INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, IMG_URL, LOCATION, URL_1, URL_2, URL_3, CTGR, ETC, IS_PUBLIC)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?);
+INSERT INTO CALENDAR (SCH_EMAIL, SCH_SEQ, SCH_DATE)
+  VALUES (?, ?, ?);
+COMMIT;`, [requestEmail, addSequence, requestStartDate, requestEndDate, requestTitle, requestContent,
+                    requestImgUrl, requestLocation, requestUrl1, requestUrl2, requestUrl3, requestCategory, requestEtc, requestIsPublic, requestEmail, addSequence, requestSchDate]);
                 return res.json({ isSuccess: true, message: "" });
             }
             catch (error) {
