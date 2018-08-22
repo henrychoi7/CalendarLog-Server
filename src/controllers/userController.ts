@@ -45,7 +45,7 @@ WHERE EMAIL = ?`, [requestEmail]);
         promiseMysqlModule.connect(async (connection: any) => {
             try {
                 const postLogin = await connection.query(`
-SELECT PSWD, DELETE_YN
+SELECT PSWD, DELETE_YN, NICKNM
 FROM USER_INFO
 WHERE EMAIL = ?`, [requestEmail]);
                 if (!postLogin.length) {
@@ -61,7 +61,7 @@ WHERE EMAIL = ?`, [requestEmail]);
                         return res.json({isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요."});
                     }
                     if (isMatched === true) {
-                        res.json({isSuccess: true, message: ""});
+                        res.json({isSuccess: true, message: postLogin[0].NICKNM});
                     } else {
                         res.json({isSuccess: false, message: "비밀번호가 일치하지 않습니다."});
                     }

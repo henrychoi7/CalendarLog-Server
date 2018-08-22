@@ -14,21 +14,21 @@ export class MainController {
                 const scheduleList = await connection.query(`
 SELECT TOT.SCH_DATE, COUNT(0) AS SCH_CNT
 FROM (
-  SELECT SCH_DATE
-  FROM CALENDAR
-  WHERE SCH_EMAIL = ?
+    SELECT SCH_DATE
+    FROM CALENDAR
+    WHERE SCH_EMAIL = ?
 
-  UNION ALL
+    UNION ALL
 
-  SELECT A.SCH_DATE
-  FROM CALENDAR AS A
+    SELECT A.SCH_DATE
+    FROM CALENDAR AS A
     INNER JOIN LIKE_HISTORY AS B
-      ON B.MY_EMAIL = ?
-         AND A.SCH_EMAIL = B.SCH_EMAIL
-         AND A.SCH_SEQ = B.SCH_SEQ
+        ON B.MY_EMAIL = ?
+        AND A.SCH_EMAIL = B.SCH_EMAIL
+        AND A.SCH_SEQ = B.SCH_SEQ
     INNER JOIN USER_INFO AS C
-      ON B.SCH_EMAIL = C.EMAIL
-      AND C.DELETE_YN = 'N'
+        ON B.SCH_EMAIL = C.EMAIL
+        AND C.DELETE_YN = 'N'
 ) TOT
 GROUP BY TOT.SCH_DATE
 ORDER BY TOT.SCH_DATE ASC
@@ -36,52 +36,53 @@ ORDER BY TOT.SCH_DATE ASC
 
                 const feedList = await connection.query(`
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  B.NICKNM, A.TITLE, A.CONTENT,
-  CONCAT(
-    CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
-    DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
-  ) AS REGISTER_DATETIME, A.IS_PUBLIC,
-  (SELECT COUNT(0) AS LIKE_CNT
+    CASE WHEN A.SCH_EMAIL = ? THEN CONCAT(B.NICKNM, ' (나)')
+        ELSE B.NICKNM END NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    (SELECT COUNT(0) AS LIKE_CNT
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ) AS LIKE_CNT,
-  (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
+    (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ
     AND LH.MY_EMAIL = ?) AS IS_LIKE,
-  (SELECT COUNT(0) AS COM_CNT
+    (SELECT COUNT(0) AS COM_CNT
     FROM COMMENT_HISTORY AS CH
     WHERE CH.SCH_EMAIL = A.SCH_EMAIL
     AND CH.SCH_SEQ = A.SCH_SEQ) AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
-  AND B.DELETE_YN = 'N'
+    ON A.SCH_EMAIL = B.EMAIL
+    AND B.DELETE_YN = 'N'
 WHERE EXISTS (
-  SELECT UC.CTGR
-  FROM USER_CATEGORY AS UC
-  WHERE UC.EMAIL = ?
-  AND A.CTGR = UC.CTGR
+    SELECT UC.CTGR
+    FROM USER_CATEGORY AS UC
+    WHERE UC.EMAIL = ?
+    AND A.CTGR = UC.CTGR
 )
 AND A.IS_PUBLIC = 'Y'
 
 UNION
 
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
-  CONCAT(
-    CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
-    DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
-  ) AS REGISTER_DATETIME, A.IS_PUBLIC,
-  0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
+    CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
+    ON A.SCH_EMAIL = B.EMAIL
 WHERE SCH_EMAIL = ?
-ORDER BY SCH_EMAIL, SCH_SEQ DESC
+ORDER BY REGISTER_DATETIME DESC
 LIMIT 10
-`, [requestEmail, requestEmail, requestEmail]);
+`, [requestEmail, requestEmail, requestEmail, requestEmail]);
                 return res.json({isSuccess: true, message: "", scheduleList: scheduleList, feedList: feedList});
             } catch (error) {
                 return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
@@ -104,52 +105,53 @@ LIMIT 10
             try {
                 const feedList = await connection.query(`
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  B.NICKNM, A.TITLE, A.CONTENT,
-  CONCAT(
-    CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
-    DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
-  ) AS REGISTER_DATETIME, A.IS_PUBLIC,
-  (SELECT COUNT(0) AS LIKE_CNT
+    CASE WHEN A.SCH_EMAIL = ? THEN CONCAT(B.NICKNM, ' (나)')
+      ELSE B.NICKNM END NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    (SELECT COUNT(0) AS LIKE_CNT
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ) AS LIKE_CNT,
-  (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
+    (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ
     AND LH.MY_EMAIL = ?) AS IS_LIKE,
-  (SELECT COUNT(0) AS COM_CNT
+    (SELECT COUNT(0) AS COM_CNT
     FROM COMMENT_HISTORY AS CH
     WHERE CH.SCH_EMAIL = A.SCH_EMAIL
     AND CH.SCH_SEQ = A.SCH_SEQ) AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
-  AND B.DELETE_YN = 'N'
+    ON A.SCH_EMAIL = B.EMAIL
+    AND B.DELETE_YN = 'N'
 WHERE EXISTS (
-  SELECT UC.CTGR
-  FROM USER_CATEGORY AS UC
-  WHERE UC.EMAIL = ?
-  AND A.CTGR = UC.CTGR
+    SELECT UC.CTGR
+    FROM USER_CATEGORY AS UC
+    WHERE UC.EMAIL = ?
+    AND A.CTGR = UC.CTGR
 )
 AND A.IS_PUBLIC = 'Y'
 
 UNION
 
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
-  CONCAT(
-    CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
-    DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
-  ) AS REGISTER_DATETIME, A.IS_PUBLIC,
-  0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
+    CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
+    ON A.SCH_EMAIL = B.EMAIL
 WHERE SCH_EMAIL = ?
-ORDER BY SCH_EMAIL, SCH_SEQ DESC
+ORDER BY REGISTER_DATETIME DESC
 LIMIT ?, 10
-`, [requestEmail, requestEmail, requestEmail, Number(requestRow)]);
+`, [requestEmail, requestEmail, requestEmail, requestEmail, Number(requestRow)]);
                 return res.json({isSuccess: true, message: "", feedList: feedList});
             } catch (error) {
                 return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
@@ -177,34 +179,38 @@ LIMIT ?, 10
             try {
                 const feedList = await connection.query(`
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  B.NICKNM, A.TITLE, A.CONTENT,
-  DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d %p %l:%i') AS REGISTER_DATETIME, A.IS_PUBLIC,
-  (SELECT COUNT(0) AS LIKE_CNT
+    CASE WHEN A.SCH_EMAIL = ? THEN CONCAT(B.NICKNM, ' (나)')
+        ELSE B.NICKNM END NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    (SELECT COUNT(0) AS LIKE_CNT
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ) AS LIKE_CNT,
-  (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
+    (SELECT CASE COUNT(0) WHEN 0 THEN 'N' ELSE 'Y' END AS IS_LIKE
     FROM LIKE_HISTORY AS LH
     WHERE LH.SCH_EMAIL = A.SCH_EMAIL
     AND LH.SCH_SEQ = A.SCH_SEQ
     AND LH.MY_EMAIL = ?) AS IS_LIKE,
-  (SELECT COUNT(0) AS COM_CNT
+    (SELECT COUNT(0) AS COM_CNT
     FROM COMMENT_HISTORY AS CH
     WHERE CH.SCH_EMAIL = A.SCH_EMAIL
     AND CH.SCH_SEQ = A.SCH_SEQ) AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
-  AND B.DELETE_YN = 'N'
+    ON A.SCH_EMAIL = B.EMAIL
+    AND B.DELETE_YN = 'N'
 INNER JOIN LIKE_HISTORY AS C
-      ON C.MY_EMAIL = ?
-         AND A.SCH_EMAIL = C.SCH_EMAIL
-         AND A.SCH_SEQ = C.SCH_SEQ
+    ON C.MY_EMAIL = ?
+    AND A.SCH_EMAIL = C.SCH_EMAIL
+    AND A.SCH_SEQ = C.SCH_SEQ
 WHERE EXISTS (
-  SELECT UC.CTGR
-  FROM USER_CATEGORY AS UC
-  WHERE UC.EMAIL = ?
-  AND A.CTGR = UC.CTGR
+    SELECT UC.CTGR
+    FROM USER_CATEGORY AS UC
+    WHERE UC.EMAIL = ?
+    AND A.CTGR = UC.CTGR
 )
 AND A.START_DATE <= ?
 AND A.END_DATE >= ?
@@ -213,21 +219,92 @@ AND A.IS_PUBLIC = 'Y'
 UNION ALL
 
 SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
-  CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
-  DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d %p %l:%i') AS REGISTER_DATETIME, A.IS_PUBLIC,
-  0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
+    CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+    0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
 FROM SCHEDULE AS A
 INNER JOIN USER_INFO AS B
-  ON A.SCH_EMAIL = B.EMAIL
+    ON A.SCH_EMAIL = B.EMAIL
 WHERE A.SCH_EMAIL = ?
 AND A.START_DATE <= ?
 AND A.END_DATE >= ?
-ORDER BY SCH_EMAIL, SCH_SEQ DESC
+ORDER BY REGISTER_DATETIME DESC
 LIMIT ?, 10
-`, [requestEmail, requestEmail, requestEmail, requestScheduleDate, requestScheduleDate,
+`, [requestEmail, requestEmail, requestEmail, requestEmail, requestScheduleDate, requestScheduleDate,
                     requestEmail, requestScheduleDate, requestScheduleDate,
                     Number(requestRow)]);
                 return res.json({isSuccess: true, message: "", feedList: feedList});
+            } catch (error) {
+                return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
+            }
+        })();
+    }
+
+    getFeedListForUserInfo(req: Request, res: Response) {
+        let requestEmail = req.query.email;
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+        requestEmail = requestEmail.replace(/(\s*)/g, '');
+
+        let requestRow = req.query.row;
+        if (!requestRow || isNaN(requestRow) || requestRow < 0) return res.json({
+            isSuccess: false,
+            message: "조회 번호가 잘못되었습니다."
+        });
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const feedList = await connection.query(`
+SELECT C.SCH_EMAIL, C.SCH_SEQ, C.IMG_URL,
+    CASE WHEN C.SCH_EMAIL = ? THEN CONCAT(B.NICKNM, ' (나)')
+        ELSE B.NICKNM END NICKNM, C.TITLE, C.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(C.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(C.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(C.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, C.IS_PUBLIC,
+    (SELECT COUNT(0) AS LIKE_CNT
+    FROM LIKE_HISTORY AS LH
+    WHERE LH.SCH_EMAIL = A.SCH_EMAIL
+    AND LH.SCH_SEQ = A.SCH_SEQ) AS LIKE_CNT,
+    'Y' AS IS_LIKE,
+    (SELECT COUNT(0) AS COM_CNT
+    FROM COMMENT_HISTORY AS CH
+    WHERE CH.SCH_EMAIL = A.SCH_EMAIL
+    AND CH.SCH_SEQ = A.SCH_SEQ) AS COM_CNT
+FROM LIKE_HISTORY AS A
+INNER JOIN USER_INFO AS B
+    ON A.SCH_EMAIL = B.EMAIL
+    AND B.DELETE_YN = 'N'
+INNER JOIN SCHEDULE AS C
+    ON A.SCH_EMAIL = C.SCH_EMAIL
+    AND A.SCH_SEQ = C.SCH_SEQ
+WHERE A.MY_EMAIL = ?
+
+UNION
+
+SELECT A.SCH_EMAIL, A.SCH_SEQ, A.IMG_URL,
+    CONCAT(B.NICKNM, ' (나)') AS NICKNM, A.TITLE, A.CONTENT,
+    CONCAT(
+        CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+        DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME, A.IS_PUBLIC,
+  0 AS LIKE_CNT, 'N' AS IS_LIKE, 0 AS COM_CNT
+FROM SCHEDULE AS A
+INNER JOIN USER_INFO AS B
+    ON A.SCH_EMAIL = B.EMAIL
+WHERE SCH_EMAIL = ?
+ORDER BY REGISTER_DATETIME DESC
+LIMIT ?, 10
+`, [requestEmail, requestEmail, requestEmail, Number(requestRow)]);
+
+                const count = await connection.query(`
+SELECT COUNT(1) AS CNT
+FROM LIKE_HISTORY
+WHERE MY_EMAIL = ?
+`, [requestEmail]);
+                return res.json({isSuccess: true, message: "", likedScheduleCount: String(count[0].CNT), feedList: feedList});
             } catch (error) {
                 return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
             }

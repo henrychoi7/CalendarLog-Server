@@ -12,5 +12,8 @@ export class MainRoute {
 
         express.route('/feed_list_for_day')
             .get(this.mainController.getFeedListForDay);
+
+        express.route('/feed_list_for_user_info')
+            .get(this.mainController.getFeedListForUserInfo);
     }
 }
