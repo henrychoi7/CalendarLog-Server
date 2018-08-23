@@ -310,7 +310,19 @@ SELECT COUNT(1) AS CNT
 FROM LIKE_HISTORY
 WHERE MY_EMAIL = ?
 `, [requestEmail]);
-                return res.json({ isSuccess: true, message: "", likedScheduleCount: String(count[0].CNT), feedList: feedList });
+                const userInfo = yield connection.query(`
+SELECT NICKNM, NOTE_YN
+FROM USER_INFO
+WHERE EMAIL = ?
+`, [requestEmail]);
+                return res.json({
+                    isSuccess: true,
+                    message: "",
+                    likedScheduleCount: String(count[0].CNT),
+                    nickname: userInfo[0].NICKNM,
+                    isReceiveNote: userInfo[0].NOTE_YN,
+                    feedList: feedList
+                });
             }
             catch (error) {
                 return res.json({ isSuccess: false, message: "서버와의 연결이 불안정합니다." });

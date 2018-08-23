@@ -2,6 +2,7 @@ import {pool, promiseMysqlModule} from '../config/mysql.pool';
 import {Request, Response} from 'express';
 import * as regexEmail from "regex-email";
 import * as bcrypt from "bcrypt";
+import {isBoolean} from "util";
 
 let saltRounds = 10;
 
@@ -45,7 +46,7 @@ WHERE EMAIL = ?`, [requestEmail]);
         promiseMysqlModule.connect(async (connection: any) => {
             try {
                 const postLogin = await connection.query(`
-SELECT PSWD, DELETE_YN, NICKNM
+SELECT PSWD, DELETE_YN
 FROM USER_INFO
 WHERE EMAIL = ?`, [requestEmail]);
                 if (!postLogin.length) {
@@ -61,7 +62,7 @@ WHERE EMAIL = ?`, [requestEmail]);
                         return res.json({isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요."});
                     }
                     if (isMatched === true) {
-                        res.json({isSuccess: true, message: postLogin[0].NICKNM});
+                        res.json({isSuccess: true, message: ""});
                     } else {
                         res.json({isSuccess: false, message: "비밀번호가 일치하지 않습니다."});
                     }
@@ -72,7 +73,7 @@ WHERE EMAIL = ?`, [requestEmail]);
         })();
     }
 
-    public postRegister(req: Request, res: Response) {
+    postRegister(req: Request, res: Response) {
 
         let requestEmail = req.body.email,
             requestPassword = req.body.password,
@@ -239,5 +240,56 @@ WHERE EMAIL = ?`, [requestEmail]);
                     });
                 });
         });
+    }
+
+    updateNoteStatus(req: Request, res: Response) {
+        let requestEmail = req.body.email;
+        const requestIsReceiveNote = req.body.isReceiveNote;
+
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+        if (isBoolean(requestIsReceiveNote) == false)
+            return res.json({isSuccess: false, message: "쪽지 수신 여부 값을 올바르게 입력해주세요."});
+
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const userInfo = await connection.query(`
+UPDATE USER_INFO
+SET NOTE_YN = ?
+WHERE EMAIL = ?`, [requestIsReceiveNote == true ? "Y" : "N", requestEmail]);
+                if (userInfo.affectedRows === 0) {
+                    res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
+                } else {
+                    res.json({isSuccess: true, message: ""});
+                }
+            } catch (error) {
+                return res.json({isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요."});
+            }
+        })();
+    }
+
+    deleteUserInfo(req: Request, res: Response) {
+        let requestEmail = req.body.email;
+
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const userInfo = await connection.query(`
+UPDATE USER_INFO
+SET DELETE_YN = 'Y'
+WHERE EMAIL = ?`, [requestEmail]);
+                if (userInfo.affectedRows === 0) {
+                    res.json({isSuccess: false, message: "이메일이 올바르지 않습니다."});
+                } else {
+                    res.json({isSuccess: true, message: ""});
+                }
+            } catch (error) {
+                return res.json({isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요."});
+            }
+        })();
     }
 }

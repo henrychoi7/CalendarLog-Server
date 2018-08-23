@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_pool_1 = require("../config/mysql.pool");
 const regexEmail = require("regex-email");
 const bcrypt = require("bcrypt");
+const util_1 = require("util");
 let saltRounds = 10;
 class UserController {
     getLogin(req, res) {
@@ -48,7 +49,7 @@ WHERE EMAIL = ?`, [requestEmail]);
         mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const postLogin = yield connection.query(`
-SELECT PSWD, DELETE_YN, NICKNM
+SELECT PSWD, DELETE_YN
 FROM USER_INFO
 WHERE EMAIL = ?`, [requestEmail]);
                 if (!postLogin.length) {
@@ -62,7 +63,7 @@ WHERE EMAIL = ?`, [requestEmail]);
                         return res.json({ isSuccess: false, message: "로그인(비밀번호 매칭)에 실패하였습니다.\n값을 확인해주세요." });
                     }
                     if (isMatched === true) {
-                        res.json({ isSuccess: true, message: postLogin[0].NICKNM });
+                        res.json({ isSuccess: true, message: "" });
                     }
                     else {
                         res.json({ isSuccess: false, message: "비밀번호가 일치하지 않습니다." });
@@ -230,6 +231,55 @@ WHERE EMAIL = ?`, [requestEmail]);
                 });
             });
         });
+    }
+    updateNoteStatus(req, res) {
+        let requestEmail = req.body.email;
+        const requestIsReceiveNote = req.body.isReceiveNote;
+        if (!requestEmail)
+            return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
+        if (util_1.isBoolean(requestIsReceiveNote) == false)
+            return res.json({ isSuccess: false, message: "쪽지 수신 여부 값을 올바르게 입력해주세요." });
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+        mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userInfo = yield connection.query(`
+UPDATE USER_INFO
+SET NOTE_YN = ?
+WHERE EMAIL = ?`, [requestIsReceiveNote == true ? "Y" : "N", requestEmail]);
+                if (userInfo.affectedRows === 0) {
+                    res.json({ isSuccess: false, message: "이메일이 올바르지 않습니다." });
+                }
+                else {
+                    res.json({ isSuccess: true, message: "" });
+                }
+            }
+            catch (error) {
+                return res.json({ isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요." });
+            }
+        }))();
+    }
+    deleteUserInfo(req, res) {
+        let requestEmail = req.body.email;
+        if (!requestEmail)
+            return res.json({ isSuccess: false, message: "이메일을 입력해주세요." });
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+        mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userInfo = yield connection.query(`
+UPDATE USER_INFO
+SET DELETE_YN = 'Y'
+WHERE EMAIL = ?`, [requestEmail]);
+                if (userInfo.affectedRows === 0) {
+                    res.json({ isSuccess: false, message: "이메일이 올바르지 않습니다." });
+                }
+                else {
+                    res.json({ isSuccess: true, message: "" });
+                }
+            }
+            catch (error) {
+                return res.json({ isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요." });
+            }
+        }))();
     }
 }
 exports.UserController = UserController;

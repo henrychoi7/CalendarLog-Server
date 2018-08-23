@@ -10,5 +10,11 @@ export class UserRoute {
 
         express.route('/register')
             .post(this.userController.postRegister);
+
+        express.route('/update_note_status')
+            .put(this.userController.updateNoteStatus);
+
+        express.route('/delete_user_info')
+            .delete(this.userController.deleteUserInfo);
     }
 }
