@@ -264,7 +264,7 @@ WHERE EMAIL = ?`, [requestIsReceiveNote == true ? "Y" : "N", requestEmail]);
                     res.json({isSuccess: true, message: ""});
                 }
             } catch (error) {
-                return res.json({isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요."});
+                return res.json({isSuccess: false, message: "쪽지 수신 여부를 변경하는데 실패하였습니다.\n다시 시도해주세요."});
             }
         })();
     }
@@ -289,6 +289,44 @@ WHERE EMAIL = ?`, [requestEmail]);
                 }
             } catch (error) {
                 return res.json({isSuccess: false, message: "회원탈퇴에 실패하였습니다.\n다시 시도해주세요."});
+            }
+        })();
+    }
+
+    getUserInfoForEdit(req: Request, res: Response) {
+        let requestEmail = req.query.email;
+
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+
+        requestEmail = requestEmail.replace(/(\s*)/g, "");
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const userInfo = await connection.query(`
+SELECT SEX, ASSOCIATE
+FROM USER_INFO
+WHERE EMAIL = ?`, [requestEmail]);
+
+                const userCategoryIndexs = await connection.query(`
+SELECT CAST(CTGR AS UNSIGNED) - 1 AS IDX
+FROM USER_CATEGORY
+WHERE EMAIL = ?`, [requestEmail]);
+
+                let categories = [];
+
+                for (let index of userCategoryIndexs) {
+                    categories.push(index.IDX);
+                }
+
+                res.json({
+                    isSuccess: true,
+                    message: "이메일이 올바르지 않습니다.",
+                    sex: userInfo[0].SEX,
+                    categories: categories,
+                    associate: userInfo[0].ASSOCIATE
+                });
+            } catch (error) {
+                return res.json({isSuccess: false, message: "계정정보를 불러오는데 실패하였습니다.\n다시 시도해주세요."});
             }
         })();
     }

@@ -15,6 +15,8 @@ class UserRoute {
             .put(this.userController.updateNoteStatus);
         express.route('/delete_user_info')
             .delete(this.userController.deleteUserInfo);
+        express.route('/user_info_for_edit')
+            .get(this.userController.getUserInfoForEdit);
     }
 }
 exports.UserRoute = UserRoute;
