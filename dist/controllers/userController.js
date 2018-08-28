@@ -292,12 +292,12 @@ WHERE EMAIL = ?`, [requestEmail]);
 SELECT SEX, ASSOCIATE
 FROM USER_INFO
 WHERE EMAIL = ?`, [requestEmail]);
-                const userCategoryIndexs = yield connection.query(`
+                const userCategoryIndexes = yield connection.query(`
 SELECT CAST(CTGR AS UNSIGNED) - 1 AS IDX
 FROM USER_CATEGORY
 WHERE EMAIL = ?`, [requestEmail]);
                 let categories = [];
-                for (let index of userCategoryIndexs) {
+                for (let index of userCategoryIndexes) {
                     categories.push(index.IDX);
                 }
                 res.json({

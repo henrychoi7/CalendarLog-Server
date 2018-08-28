@@ -307,14 +307,14 @@ SELECT SEX, ASSOCIATE
 FROM USER_INFO
 WHERE EMAIL = ?`, [requestEmail]);
 
-                const userCategoryIndexs = await connection.query(`
+                const userCategoryIndexes = await connection.query(`
 SELECT CAST(CTGR AS UNSIGNED) - 1 AS IDX
 FROM USER_CATEGORY
 WHERE EMAIL = ?`, [requestEmail]);
 
                 let categories = [];
 
-                for (let index of userCategoryIndexs) {
+                for (let index of userCategoryIndexes) {
                     categories.push(index.IDX);
                 }
 
