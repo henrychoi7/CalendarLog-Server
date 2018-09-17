@@ -1,16 +1,16 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const scheduleController_1 = require("../controllers/scheduleController");
-class ScheduleRoute {
-    constructor() {
+exports.__esModule = true;
+var scheduleController_1 = require("../controllers/scheduleController");
+var ScheduleRoute = /** @class */ (function () {
+    function ScheduleRoute() {
         this.scheduleController = new scheduleController_1.ScheduleController();
     }
-    routes(express) {
+    ScheduleRoute.prototype.routes = function (express) {
         express.route('/create_schedule')
             .post(this.scheduleController.createSchedule);
         express.route('/modify_schedule')
             .post(this.scheduleController.modifySchedule);
-    }
-}
+    };
+    return ScheduleRoute;
+}());
 exports.ScheduleRoute = ScheduleRoute;
-//# sourceMappingURL=scheduleRoute.js.map

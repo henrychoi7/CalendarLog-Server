@@ -66,36 +66,62 @@ class ScheduleController {
                 message: "선택한 관심분야 값이 올바르지 않습니다."
             });
         }
-        //const get = promiseMysqlModule.connect((con: any, id: string) => con.query('select * from user', [id]));
-        mysql_pool_1.promiseMysqlModule.connect((connection) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const addSequence = yield connection.query(`
-SELECT MAX(SCH_SEQ) + 1
-FROM SCHEDULE
-WHERE SCH_EMAIL = ?`, [requestEmail]);
-                const requestSchDate = yield connection.query(`
-DECLARE @date DATE = ?
-WHILE @date < ?
-  BEGIN
-    INSERT INTO CALENDAR (SCH_DATE)
-      VALUES (@date)
-    SET @date = DATEADD (DAY, 1, @date)
-  END
-GO`, [requestStartDate, requestEndDate]);
-                yield connection.query(`
-BEGIN;
-INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, IMG_URL, LOCATION, URL_1, URL_2, URL_3, CTGR, ETC, IS_PUBLIC)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?);
-INSERT INTO CALENDAR (SCH_EMAIL, SCH_SEQ, SCH_DATE)
-  VALUES (?, ?, ?);
-COMMIT;`, [requestEmail, addSequence, requestStartDate, requestEndDate, requestTitle, requestContent,
-                    requestImgUrl, requestLocation, requestUrl1, requestUrl2, requestUrl3, requestCategory, requestEtc, requestIsPublic, requestEmail, addSequence, requestSchDate]);
-                return res.json({ isSuccess: true, message: "" });
+        let executeSQL, executeSQL2 = "";
+        // 트랜잭션에서 다중쿼리 async/await 하는 부분을 잘 모르겠음
+        mysql_pool_1.pool.getConnection(function (err, connection) {
+            if (err) {
+                connection.release();
+                return res.json({ isSuccess: false, message: "서버와의 연결이 원활하지 않습니다." });
             }
-            catch (error) {
-                return res.json({ isSuccess: false, message: "서버와의 연결이 불안정합니다." });
-            }
-        }))();
+            connection.query({
+                sql: "SELECT MAX(SCH_SEQ) + 1 AS addSequence \n" +
+                    "FROM SCHEDULE \n" +
+                    "WHERE SCH_EMAIL = ?",
+                timeout: 10000
+            }, [requestEmail], function (error_1, results_1) {
+                if (error_1) {
+                    connection.release();
+                    return res.json({ isSuccess: false, message: "스케줄 등록(이메일 중복 검사)에 실패하였습니다.\n값을 확인해주세요." });
+                }
+                executeSQL += "CALL datelist('" + requestStartDate + "', '" + requestEndDate + "', '" + results_1[0].addSequence + "', '" + requestEmail + "');";
+                executeSQL2 += "INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, IMG_URL, LOCATION, URL_1, URL_2, URL_3, CTGR, ETC, IS_PUBLIC) \
+                                   VALUES ('" + requestEmail + "', '" + results_1[0].addSequence + "', '" + requestStartDate + "', '" + requestEndDate + "', '" +
+                    requestTitle + "', '" + requestContent + "', '" + requestImgUrl + "', '" + requestLocation + "', '" + requestUrl1 + "', '" +
+                    requestUrl2 + "', '" + requestUrl3 + requestCategory + "', '" + requestEtc + "', '" + requestIsPublic + "');";
+                connection.beginTransaction(function (err) {
+                    if (err) {
+                        connection.release();
+                        return res.json({ isSuccess: false, message: "스케줄 등록에 실패하였습니다.\n값을 확인해주세요." });
+                    }
+                    connection.query(executeSQL, function (error_2) {
+                        if (error_2) {
+                            return connection.rollback(function () {
+                                connection.release();
+                                res.json({ isSuccess: false, message: "스케줄 등록에 실패하였습니다.\n값을 확인해주세요." });
+                            });
+                        }
+                        connection.query(executeSQL2, function (error_2) {
+                            if (error_2) {
+                                return connection.rollback(function () {
+                                    connection.release();
+                                    res.json({ isSuccess: false, message: "스케줄 등록에 실패하였습니다.\n값을 확인해주세요." });
+                                });
+                            }
+                            connection.commit(function (error_3) {
+                                if (error_3) {
+                                    return connection.rollback(function () {
+                                        connection.release();
+                                        res.json({ isSuccess: false, message: "스케줄 등록에 실패하였습니다.\n값을 확인해주세요." });
+                                    });
+                                }
+                                connection.release();
+                                res.json({ isSuccess: true, message: "스케줄 등록이 성공적으로 이루어졌습니다!" });
+                            });
+                        });
+                    });
+                });
+            });
+        });
     }
     modifySchedule(req, res) {
         let requestSequence = req.query.sequence, requestEmail = req.query.email, requestStartDate = req.query.start_date, requestEndDate = req.query.end_date, requestTitle = req.query.schedule_title, requestContent = req.query.schedule_content, requestImgUrl = req.query.img_url, requestLocation = req.query.schedule_location, requestUrl1 = req.query.url1, requestUrl2 = req.query.url2, requestUrl3 = req.query.url3, requestCategory = req.query.category, requestEtc = req.query.etc, requestIsPublic = req.query.is_public;
