@@ -145,7 +145,7 @@ export class ScheduleController {
         });
     }
 
-    modifySchedule(req: Request, res: Response) {
+    updateSchedule(req: Request, res: Response) {
         let requestSequence = req.body.sequence,
             requestEmail = req.body.email,
             requestStartDate = req.body.start_date,

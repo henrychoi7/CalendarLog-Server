@@ -7,7 +7,7 @@ export class ScheduleRoute {
         express.route('/create_schedule')
             .post(this.scheduleController.createSchedule);
 
-        express.route('/modify_schedule')
-            .post(this.scheduleController.modifySchedule);
+        express.route('/update_schedule')
+            .post(this.scheduleController.updateSchedule);
     }
 }

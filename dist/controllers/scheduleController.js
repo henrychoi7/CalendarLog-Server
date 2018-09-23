@@ -120,7 +120,7 @@ class ScheduleController {
             });
         });
     }
-    modifySchedule(req, res) {
+    updateSchedule(req, res) {
         let requestSequence = req.body.sequence, requestEmail = req.body.email, requestStartDate = req.body.start_date, requestEndDate = req.body.end_date, requestTitle = req.body.title, requestContent = req.body.content, requestImgUrl = req.body.img_url, requestLocation = req.body.location, requestUrl1 = req.body.url1, requestUrl2 = req.body.url2, requestUrl3 = req.body.url3, requestCategory = req.body.category, requestEtc = req.body.etc, requestIsPublic = req.body.is_public;
         if (!requestSequence)
             return res.json({ isSuccess: false, message: "잘못된 일정입니다." });
