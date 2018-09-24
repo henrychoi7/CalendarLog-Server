@@ -7,6 +7,8 @@ export class ScheduleController {
         let requestEmail = req.body.email,
             requestStartDate = req.body.start_date,
             requestEndDate = req.body.end_date,
+            requestStartDatetime = req.body.start_datetime,
+            requestEndDatetime = req.body.end_datetime,
             requestTitle = req.body.title,
             requestContent = req.body.content,
             requestImgUrl = req.body.img_url,
@@ -21,6 +23,8 @@ export class ScheduleController {
         if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
         if (!requestStartDate) return res.json({isSuccess: false, message: "시작 날짜를 선택해주세요."});
         if (!requestEndDate) return res.json({isSuccess: false, message: "종료 날짜를 선택해주세요."});
+        if (!requestStartDatetime) return res.json({isSuccess: false, message: "시작 세부날짜를 선택해주세요."});
+        if (!requestEndDatetime) return res.json({isSuccess: false, message: "종료 세부날짜를 선택해주세요."});
         if (!requestTitle) return res.json({isSuccess: false, message: "제목을 입력해주세요."});
         if (!requestContent) return res.json({isSuccess: false, message: "내용을 입력해주세요."});
         if (!requestLocation) return res.json({isSuccess: false, message: "장소를 입력해주세요."});
@@ -80,7 +84,7 @@ export class ScheduleController {
 
                     let executeSQL = "CALL datelist('" + requestEmail + "', " + results_1[0].addSequence + ", '" + requestStartDate + "', '" + requestEndDate + "');";
 
-                    executeSQL += "INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, LOCATION, CTGR, IS_PUBLIC";
+                    executeSQL += "INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, START_DATETIME, END_DATETIME, TITLE, CONTENT, LOCATION, CTGR, IS_PUBLIC";
 
                     let columnSQL = "";
                     let parameterSQL = "";
@@ -110,7 +114,7 @@ export class ScheduleController {
                     }
 
                     executeSQL += columnSQL + ") ";
-                    executeSQL += "VALUES ('" + requestEmail + "', " + results_1[0].addSequence + ", '" + requestStartDate + "', '" + requestEndDate + "', '" +
+                    executeSQL += "VALUES ('" + requestEmail + "', " + results_1[0].addSequence + ", '" + requestStartDate + "', '" + requestEndDate + "', '" + requestStartDatetime + "', '" + requestEndDatetime + "', '" +
                         requestTitle + "', '" + requestContent + "', '" + requestLocation + "', '" + requestCategory + "', '" + (requestIsPublic == true ? "Y" : "N") + "'";
                     executeSQL += parameterSQL + ");";
 
@@ -137,7 +141,7 @@ export class ScheduleController {
                                 }
 
                                 connection.release();
-                                res.json({isSuccess: true, message: "스케줄 등록이 성공적으로 이루어졌습니다!"});
+                                res.json({isSuccess: true, message: ""});
                             });
                         });
                     });
@@ -150,6 +154,8 @@ export class ScheduleController {
             requestEmail = req.body.email,
             requestStartDate = req.body.start_date,
             requestEndDate = req.body.end_date,
+            requestStartDatetime = req.body.start_datetime,
+            requestEndDatetime = req.body.end_datetime,
             requestTitle = req.body.title,
             requestContent = req.body.content,
             requestImgUrl = req.body.img_url,
@@ -165,6 +171,8 @@ export class ScheduleController {
         if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
         if (!requestStartDate) return res.json({isSuccess: false, message: "시작 날짜를 선택해주세요."});
         if (!requestEndDate) return res.json({isSuccess: false, message: "종료 날짜를 선택해주세요."});
+        if (!requestStartDatetime) return res.json({isSuccess: false, message: "시작 세부날짜를 선택해주세요."});
+        if (!requestEndDatetime) return res.json({isSuccess: false, message: "종료 세부날짜를 선택해주세요."});
         if (!requestTitle) return res.json({isSuccess: false, message: "제목을 입력해주세요."});
         if (!requestContent) return res.json({isSuccess: false, message: "내용을 입력해주세요."});
         if (!requestLocation) return res.json({isSuccess: false, message: "장소를 입력해주세요."});
@@ -230,7 +238,7 @@ export class ScheduleController {
                     let executeSQL = "DELETE FROM CALENDAR WHERE SCH_EMAIL = '" + requestEmail + "' AND SCH_SEQ = " + requestSequence + ";";
                     executeSQL += "DELETE FROM SCHEDULE WHERE SCH_EMAIL = '" + requestEmail + "' AND SCH_SEQ = " + requestSequence + ";";
                     executeSQL += "CALL datelist('" + requestEmail + "', " + requestSequence + ", '" + requestStartDate + "', '" + requestEndDate + "');";
-                    executeSQL += "INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, TITLE, CONTENT, LOCATION, CTGR, IS_PUBLIC";
+                    executeSQL += "INSERT INTO SCHEDULE (SCH_EMAIL, SCH_SEQ, START_DATE, END_DATE, START_DATETIME, END_DATETIME, TITLE, CONTENT, LOCATION, CTGR, IS_PUBLIC";
 
                     let columnSQL = "";
                     let parameterSQL = "";
@@ -260,7 +268,7 @@ export class ScheduleController {
                     }
 
                     executeSQL += columnSQL + ") ";
-                    executeSQL += "VALUES ('" + requestEmail + "', " + requestSequence + ", '" + requestStartDate + "', '" + requestEndDate + "', '" +
+                    executeSQL += "VALUES ('" + requestEmail + "', " + requestSequence + ", '" + requestStartDate + "', '" + requestEndDate +  ", '" + requestStartDatetime + "', '" + requestEndDatetime + "', '" +
                         requestTitle + "', '" + requestContent + "', '" + requestLocation + "', '" + requestCategory + "', '" + (requestIsPublic == true ? "Y" : "N") + "'";
                     executeSQL += parameterSQL + ");";
 
@@ -287,7 +295,7 @@ export class ScheduleController {
                                 }
 
                                 connection.release();
-                                res.json({isSuccess: true, message: "스케줄 수정이 성공적으로 이루어졌습니다!"});
+                                res.json({isSuccess: true, message: ""});
                             });
                         });
                     });
