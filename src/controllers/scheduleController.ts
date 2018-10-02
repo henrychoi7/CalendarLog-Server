@@ -57,6 +57,9 @@ export class ScheduleController {
             case 5:
                 requestCategory = "006";
                 break;
+            case 999:
+                requestCategory = "999";
+                break;
             default:
                 return res.json({
                     isSuccess: false,
