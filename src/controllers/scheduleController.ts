@@ -1,4 +1,4 @@
-import {pool} from '../config/mysql.pool';
+import {pool, promiseMysqlModule} from '../config/mysql.pool';
 import {Request, Response} from 'express';
 import {isBoolean} from "util";
 
@@ -304,5 +304,95 @@ export class ScheduleController {
                     });
                 });
         });
+    }
+
+    getCommentList(req: Request, res: Response) {
+        let requestScheduleEmail = req.query.scheduleEmail;
+        let requestScheduleSequence = req.query.scheduleSequence;
+
+        if (!requestScheduleEmail) return res.json({isSuccess: false, message: "스케줄 이메일을 입력해주세요."});
+
+        requestScheduleEmail = requestScheduleEmail.replace(/(\s*)/g, '');
+
+        if (!requestScheduleSequence || isNaN(requestScheduleSequence) || requestScheduleSequence < 0) return res.json({
+            isSuccess: false,
+            message: "스케줄 번호가 잘못되었습니다."
+        });
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const commentList = await connection.query(`
+SELECT B.NICKNM, A.CONTENT,
+       CONCAT(
+            CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+            DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME
+FROM COMMENT_HISTORY AS A
+INNER JOIN USER_INFO AS B
+  ON A.COM_EMAIL = B.EMAIL
+WHERE A.SCH_EMAIL = ?
+AND A.SCH_SEQ = ?
+ORDER BY A.COM_SEQ DESC
+LIMIT 5;
+`, [requestScheduleEmail, Number(requestScheduleSequence)]);
+                return res.json({isSuccess: true, message: "", commentList: commentList});
+            } catch (error) {
+                return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
+            }
+        })();
+    }
+
+    createComment(req: Request, res: Response) {
+        let requestScheduleEmail = req.body.scheduleEmail;
+        let requestScheduleSequence = req.body.scheduleSequence;
+        let requestEmail = req.body.email;
+        let requestContent = req.body.content;
+
+        if (!requestScheduleEmail) return res.json({isSuccess: false, message: "스케줄 이메일을 입력해주세요."});
+        if (!requestEmail) return res.json({isSuccess: false, message: "이메일을 입력해주세요."});
+        if (!requestContent) return res.json({isSuccess: false, message: "댓글 내용을 입력해주세요."});
+
+        requestScheduleEmail = requestScheduleEmail.replace(/(\s*)/g, '');
+
+        if (!requestScheduleSequence || isNaN(requestScheduleSequence) || requestScheduleSequence < 0) return res.json({
+            isSuccess: false,
+            message: "스케줄 번호가 잘못되었습니다."
+        });
+
+        requestEmail = requestEmail.replace(/(\s*)/g, '');
+        requestContent = requestContent.replace(/(\s*)/g, '');
+
+        promiseMysqlModule.connect(async (connection: any) => {
+            try {
+                const maxCommentSequence = await connection.query(`
+SELECT IFNULL(MAX(COM_SEQ), 0) + 1 AS COM_SEQ
+FROM COMMENT_HISTORY
+WHERE SCH_EMAIL = ?
+AND SCH_SEQ = ?
+`, [requestScheduleEmail, requestScheduleSequence]);
+
+                await connection.query(`
+INSERT INTO COMMENT_HISTORY (SCH_EMAIL, SCH_SEQ, COM_SEQ, COM_EMAIL, COM_DATE, CONTENT)
+VALUES (?, ?, ?, ?, DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d'), ?);
+`, [requestScheduleEmail, Number(requestScheduleSequence), Number(maxCommentSequence[0].COM_SEQ), requestEmail, requestContent]);
+
+                const comment = await connection.query(`
+SELECT B.NICKNM, A.CONTENT,
+       CONCAT(
+            CONCAT(DATE_FORMAT(A.REGISTER_DATETIME, '%Y-%m-%d '), CASE DATE_FORMAT(A.REGISTER_DATETIME, '%p') WHEN 'PM' THEN '오후' ELSE '오전' END),
+            DATE_FORMAT(A.REGISTER_DATETIME, ' %l:%i')
+    ) AS REGISTER_DATETIME
+FROM COMMENT_HISTORY AS A
+INNER JOIN USER_INFO AS B
+  ON A.COM_EMAIL = B.EMAIL
+WHERE A.SCH_EMAIL = ?
+AND A.SCH_SEQ = ?
+AND A.COM_SEQ = ?;
+`, [requestScheduleEmail, requestScheduleSequence, maxCommentSequence[0].COM_SEQ]);
+                return res.json({isSuccess: true, message: "", commentList: comment});
+            } catch (error) {
+                return res.json({isSuccess: false, message: "서버와의 연결이 불안정합니다."});
+            }
+        })();
     }
 }
