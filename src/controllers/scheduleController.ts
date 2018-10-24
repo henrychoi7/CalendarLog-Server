@@ -31,9 +31,9 @@ export class ScheduleController {
         if (!requestCategory && requestCategory !== 0) return res.json({isSuccess: false, message: "관심분야를 선택해주세요."});
 
         requestEmail = requestEmail.replace(/(\s*)/g, '');
-        requestTitle = requestTitle.replace(/(\s*)/g, '');
-        requestContent = requestContent.replace(/(\s*)/g, '');
-        requestLocation = requestLocation.replace(/(\s*)/g, '');
+        //requestTitle = requestTitle.replace(/(\s*)/g, '');
+        //requestContent = requestContent.replace(/(\s*)/g, '');
+        //requestLocation = requestLocation.replace(/(\s*)/g, '');
 
         if (isBoolean(requestIsPublic) == false)
             return res.json({isSuccess: false, message: "스케줄 공개 여부 값을 올바르게 입력해주세요."});
@@ -73,7 +73,7 @@ export class ScheduleController {
                 return res.json({isSuccess: false, message: "서버와의 연결이 원활하지 않습니다."});
             }
             connection.query({
-                    sql: "SELECT MAX(SCH_SEQ) + 1 AS addSequence \n" +
+                    sql: "SELECT IFNULL(MAX(SCH_SEQ) + 1, 1) AS addSequence \n" +
                          "FROM SCHEDULE \n" +
                          "WHERE SCH_EMAIL = ?",
                     timeout: 10000
@@ -271,7 +271,7 @@ export class ScheduleController {
                     }
 
                     executeSQL += columnSQL + ") ";
-                    executeSQL += "VALUES ('" + requestEmail + "', " + requestSequence + ", '" + requestStartDate + "', '" + requestEndDate +  ", '" + requestStartDatetime + "', '" + requestEndDatetime + "', '" +
+                    executeSQL += "VALUES ('" + requestEmail + "', " + requestSequence + ", '" + requestStartDate + "', '" + requestEndDate +  "', '" + requestStartDatetime + "', '" + requestEndDatetime + "', '" +
                         requestTitle + "', '" + requestContent + "', '" + requestLocation + "', '" + requestCategory + "', '" + (requestIsPublic == true ? "Y" : "N") + "'";
                     executeSQL += parameterSQL + ");";
 
